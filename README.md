@@ -1,8 +1,23 @@
-# AI Agent Learning
+# LLM Learning Journey
 
-Small Python scripts that call the [Anthropic API](https://docs.anthropic.com/) (`anthropic` SDK).
+## Week 1 - 原生 API 基础
 
-## Setup
+- 多轮对话 + 记忆管理
+- Token 成本控制
+- 结构化输出 + 防御性解析
+
+## Week 2 - Prompt 工程
+
+- Few-shot：客服工单分类
+- Chain-of-Thought：贷款审批
+- System Prompt：角色与边界控制
+
+## 技术栈
+
+- Python 3
+- [Anthropic Messages API](https://docs.anthropic.com/)（`anthropic` SDK）
+
+## 本地运行
 
 ```bash
 python3 -m venv .venv
@@ -11,14 +26,4 @@ pip install -r requirements.txt
 export ANTHROPIC_API_KEY="your-key"
 ```
 
-## Scripts
-
-| File | Description |
-|------|-------------|
-| `chat.py` | Simple REPL chat with history |
-| `sentiment.py` | Sentiment analysis via structured JSON |
-| `few_shot.py` | Few-shot style prompting |
-| `cto.py` | CTO-style review / approval flow |
-| `system_prompt.py` | System prompt experiments |
-
-Do not commit API keys; use environment variables only.
+示例脚本：`chat.py`、`sentiment.py`、`few_shot.py`、`cto.py`、`system_prompt.py`。请勿将 API Key 提交到仓库。
