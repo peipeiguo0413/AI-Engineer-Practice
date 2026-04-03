@@ -6,6 +6,10 @@ __pycache__/
 venv/
 .venv/
 env/
+ragas_env/
+
+# Chroma local DB / indices (regenerate locally)
+chroma*/
 .env
 .env.*
 *.egg-info/
