@@ -31,7 +31,7 @@ def parse_json(raw):
 def analyze(text):
     try:
         response = client.messages.create(
-            model="claude-opus-4-6",
+            model="claude-opus-4-6", # claude-sonnet-4-6（均衡）或者claude-haiku-4-5（又快又便宜）
             max_tokens=256,
             messages=[{
                 "role": "user",

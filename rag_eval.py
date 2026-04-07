@@ -18,7 +18,7 @@ import shutil
 # ── Setup ──────────────────────────────────────────────
 shutil.rmtree("./chroma_ragas", ignore_errors=True)
 
-pdf_path = "/Users/peipeiguo/Desktop/AI Agent Learning/user_data/Online Assessments Guide.pdf"
+pdf_path = "your/path/to/Online_Assessments_Guide.pdf"
 loader = PyPDFLoader(pdf_path)
 pages = loader.load()
 

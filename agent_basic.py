@@ -91,41 +91,41 @@ agent_executor = AgentExecutor(
 )
 
 # ── Test ───────────────────────────────────────────────
-# questions = [
-#     "What is 1234567 * 9876543?",  # 上周 LLM 算错的那道题！
-#     "How many words are in this sentence: The quick brown fox jumps over the lazy dog?",
-#     "I have 500 EUR, how much is that in JPY?",
-#     "If I have 1000 USD and convert to EUR, then convert all of it to GBP, how much do I get?",  # 多步推理
-# ]
+questions = [
+    "What is 1234567 * 9876543?",  # 上周 LLM 算错的那道题！
+    "How many words are in this sentence: The quick brown fox jumps over the lazy dog?",
+    "I have 500 EUR, how much is that in JPY?",
+    "If I have 1000 USD and convert to EUR, then convert all of it to GBP, how much do I get?",  # 多步推理
+]
 
-# for q in questions:
-#     print(f"\n{'='*60}")
-#     print(f"Q: {q}")
-#     result = agent_executor.invoke({"input": q})
-#     # Parse output properly
-#     output = result['output']
-#     if isinstance(output, list):
-#         output = " ".join([o['text'] for o in output if o.get('type') == 'text'])
+for q in questions:
+    print(f"\n{'='*60}")
+    print(f"Q: {q}")
+    result = agent_executor.invoke({"input": q})
+    # Parse output properly
+    output = result['output']
+    if isinstance(output, list):
+        output = " ".join([o['text'] for o in output if o.get('type') == 'text'])
 
-#     print(f"\nFinal Answer: {output}")
+    print(f"\nFinal Answer: {output}")
 
 # Test with questions requiring real-time info
-# print("\n\n=== Agent with Web Search ===\n")
+print("\n\n=== Agent with Web Search ===\n")
 
-# realtime_questions = [
-#     "What is the latest version of Python?",
-#     "What is 15% tip on a $47.50 restaurant bill?",  # calculator + math
-#     "Who won the most recent FIFA World Cup?",
-# ]
+realtime_questions = [
+    "What is the latest version of Python?",
+    "What is 15% tip on a $47.50 restaurant bill?",  # calculator + math
+    "Who won the most recent FIFA World Cup?",
+]
 
-# for q in realtime_questions:
-#     print(f"\n{'='*60}")
-#     print(f"Q: {q}")
-#     result = agent_executor.invoke({"input": q})
-#     output = result['output']
-#     if isinstance(output, list):
-#         output = " ".join([o['text'] for o in output if o.get('type') == 'text'])
-#     print(f"\nFinal Answer: {output}")
+for q in realtime_questions:
+    print(f"\n{'='*60}")
+    print(f"Q: {q}")
+    result = agent_executor.invoke({"input": q})
+    output = result['output']
+    if isinstance(output, list):
+        output = " ".join([o['text'] for o in output if o.get('type') == 'text'])
+    print(f"\nFinal Answer: {output}")
 
 print("\n\n=== Complex Multi-Tool Task ===\n")
 

@@ -1,6 +1,6 @@
 from langchain_anthropic import ChatAnthropic
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.output_parsers import JsonOutputParser
+from langchain_core.output_parsers import StrOutputParser
 
 model = ChatAnthropic(model="claude-haiku-4-5")
 
@@ -11,7 +11,7 @@ prompt = ChatPromptTemplate.from_messages([
 ])
 
 # 第二步：用 | 把三个组件串起来
-chain = prompt | model | JsonOutputParser()
+chain = prompt | model | StrOutputParser()
 
 # 第三步：调用
 result = chain.invoke({

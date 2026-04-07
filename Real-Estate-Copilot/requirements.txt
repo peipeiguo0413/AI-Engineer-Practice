@@ -1,0 +1,23 @@
+# LLM & Agents
+anthropic
+langchain
+langchain-anthropic
+langchain-community
+langgraph
+
+# RAG
+chromadb
+sentence-transformers
+pypdf
+rank-bm25
+
+# API
+fastapi
+uvicorn
+python-multipart
+pydantic
+
+# Utils
+python-dotenv
+requests
+duckduckgo-search
