@@ -60,6 +60,22 @@ mort = result['mortgage']
 print(f"\nMonthly Payment: ${mort.get('monthly_payment', 0):,.0f}")
 print(f"Total Interest:  ${mort.get('total_interest', 0):,.0f}")
 
+# Validation
+val = result.get("validation", {})
+print(f"\n{'='*60}")
+print(f"VALIDATION")
+print(f"{'='*60}")
+print(f"Passed:      {val.get('passed')}")
+print(f"Trust Level: {val.get('trust_level')}")
+if val.get('errors'):
+    print(f"Errors:")
+    for e in val['errors']:
+        print(f"  ✗ {e}")
+if val.get('warnings'):
+    print(f"Warnings:")
+    for w in val['warnings']:
+        print(f"  ⚠ {w}")
+
 print("\n\n=== COMBINED: Inspection + Interior Form ===")
 from app.rag.inspection_rag import analyze_inspection_report
 
@@ -77,3 +93,41 @@ print(f"Price Estimate:  ${pred.get('estimated_value', 0):,.0f}")
 print(f"Repair Cost:     ${cost.get('low', 0):,} – ${cost.get('high', 0):,}")
 print(f"Summary:         {rec.get('summary')}")
 print(f"Negotiation:     {rec.get('negotiation_leverage', '')[:150]}")
+
+print("\n\n=== VALIDATION TEST: Overpriced Property ===")
+from app.models.property_form import InteriorConditionForm, Condition, FlooringType
+
+bad_form = InteriorConditionForm(
+    address="999 Problem Street, Seattle, WA 98101",
+    asking_price=1500000,  # 要价极高
+    sqft=1800,
+    bedrooms=3,
+    bathrooms=2.0,
+    year_built=1965,
+    report_type="buyer",
+    kitchen_renovated=False,
+    kitchen_condition=Condition.poor,
+    master_bath_renovated=False,
+    other_baths_condition=Condition.poor,
+    flooring_type=FlooringType.carpet,
+    flooring_age_years=30,
+    flooring_condition=Condition.poor,
+    roof_age_years=25,
+    roof_condition=Condition.poor,
+    foundation_issues=True,   # 有基础问题
+    furnace_age_years=20,
+    ac_age_years=20,
+    water_heater_age=18,
+)
+
+bad_result = analyze_property(bad_form)
+bad_val = bad_result.get("validation", {})
+print(f"Verdict:     {bad_result['recommendation'].get('verdict')}")
+print(f"Price Estimate: ${bad_result['price_prediction'].get('estimated_value', 0):,.0f}")
+print(f"Asking:         ${bad_form.asking_price:,.0f}")
+print(f"Passed:      {bad_val.get('passed')}")
+print(f"Trust Level: {bad_val.get('trust_level')}")
+if bad_val.get('warnings'):
+    print("Warnings:")
+    for w in bad_val['warnings']:
+        print(f"  ⚠ {w}")

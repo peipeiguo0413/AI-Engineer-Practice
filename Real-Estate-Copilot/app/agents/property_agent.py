@@ -47,6 +47,69 @@ def compute_condition_score(form):
     grade = "Excellent" if final >= 85 else "Good" if final >= 70 else "Fair" if final >= 55 else "Poor"
     return {"condition_score": final, "grade": grade}
 
+
+def validate_result(result: dict, form) -> dict:
+    pred      = result.get("price_prediction", {})
+    rec       = result.get("recommendation", {})
+    inspection = result.get("inspection", {})
+
+    errors   = []
+    warnings = []
+
+    # Layer 1: Format validation
+    estimated = pred.get("estimated_value", 0)
+    if not isinstance(estimated, (int, float)) or estimated <= 0:
+        errors.append("Invalid price estimate — LLM returned non-numeric value")
+
+    verdict = rec.get("verdict", "")
+    if verdict not in ["BUY", "NEGOTIATE", "AVOID"]:
+        errors.append(f"Invalid verdict: '{verdict}' — must be BUY/NEGOTIATE/AVOID")
+
+    confidence = rec.get("confidence", 0)
+    if not isinstance(confidence, (int, float)) or not (0 <= confidence <= 1):
+        warnings.append(f"Confidence value '{confidence}' out of range 0-1")
+
+    # Layer 2: Sanity check
+    if estimated > 0:
+        deviation = abs(estimated - form.asking_price) / form.asking_price
+        if deviation > 0.25:
+            warnings.append(
+                f"Price estimate ${estimated:,.0f} deviates {deviation:.0%} from "
+                f"asking ${form.asking_price:,.0f} — model may be unreliable"
+            )
+
+    # Layer 3: Logic consistency
+    if inspection:
+        critical = inspection.get("critical_issues_count", 0)
+        major    = inspection.get("major_issues_count", 0)
+        if critical > 0 and verdict == "BUY":
+            warnings.append(
+                f"Verdict is BUY but {critical} critical inspection issues found — review required"
+            )
+        if (critical + major) >= 3 and verdict == "BUY":
+            warnings.append(
+                f"Verdict is BUY but {critical + major} critical/major issues found"
+            )
+
+    # Layer 4: Condition vs verdict consistency
+    condition = result.get("condition", {})
+    cond_score = condition.get("condition_score", 0)
+    if cond_score < 55 and verdict == "BUY":
+        warniappend(
+            f"Condition score {cond_score}/100 is Poor — BUY verdict warrants extra scrutiny"
+        )
+
+    passed = len(errors) == 0
+    result["validation"] = {
+        "passed":        passed,
+        "errors":        errors,
+        "warnings":      warnings,
+        "trust_level":   "high" if (passed and len(warnings) == 0)
+                         else "medium" if (passed and len(warnings) <= 2)
+                         else "low",
+    }
+    return result
+
 def analyze_property(form, inspection_result=None):
     print("Analyzing property: " + form.address)
 
@@ -141,7 +204,7 @@ def analyze_property(form, inspection_result=None):
         "market_context":    market_data[:400],
     })
 
-    return {
+    final = {
         "address":          form.address,
         "asking_price":     form.asking_price,
         "report_type":      form.report_type,
@@ -152,3 +215,4 @@ def analyze_property(form, inspection_result=None):
         "recommendation":   parse_json(rec_raw),
         "inspection":       inspection_result,
     }
+    return validate_result(final, form)
