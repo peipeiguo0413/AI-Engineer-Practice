@@ -131,3 +131,28 @@ if bad_val.get('warnings'):
     print("Warnings:")
     for w in bad_val['warnings']:
         print(f"  ⚠ {w}")
+# Comparable Sales
+print("\n\n=== COMPARABLE SALES (standalone) ===")
+comp = result.get("comps", {})
+analysis = comp.get("analysis", {})
+comps_list = comp.get("comps", [])
+
+if analysis:
+    print(f"Comp Median Price:   ${analysis.get('comp_median_price', 0):,.0f}")
+    print(f"Target vs Median:    {analysis.get('target_vs_median_pct', 0):+.1f}%")
+    low = analysis.get('fair_value_range', {}).get('low', 0)
+    high = analysis.get('fair_value_range', {}).get('high', 0)
+    print(f"Fair Value Range:    ${low:,.0f} – ${high:,.0f}")
+    print(f"Verdict:             {analysis.get('verdict', '')}")
+    print(f"\nPrice Delta Explanation:")
+    print(f"  {analysis.get('price_delta_explanation', '')}")
+    print(f"\nAdjustment Factors:")
+    for factor in analysis.get('adjustment_factors', []):
+        impact = factor.get('impact_pct', 0)
+        sign = "+" if impact > 0 else ""
+        print(f"  {sign}{impact}%  {factor.get('factor', '')}")
+    print(f"\nTop Comparableales:")
+    for i, c in enumerate(comps_list[:3], 1):
+        print(f"  {i}. {c.get('address', '')} — ${c.get('sold_price', 0):,.0f} ({c.get('sqft', 0):,} sqft, similarity: {c.get('similarity_score', 0)})")
+else:
+    print("No comp analysis available")

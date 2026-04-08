@@ -103,17 +103,32 @@ def calculate_roi(investment_params: str) -> str:
 
 @tool
 def predict_property_price(property_data: str) -> str:
-    """Predict property value based on features and condition."""
+    """Predict condition-based price adjustment for a property."""
+    rules = (
+        "Apply these rules based on the property data:\n"
+        "- Kitchen renovated within 5 years: +2% to +4%\n"
+        "- Kitchen renovated 5-10 years ago: +1% to +2%\n"
+        "- No kitchen renovation: -1% to -3%\n"
+        "- Roof under 5 years: +1% to +2%\n"
+        "- Roof 15-25 years: -1% to -3%\n"
+        "- Roof over 25 years: -3% to -6%\n"
+        "- Foundation issues: -5% to -15%\n"
+        "- HVAC over 15 years: -1% to -2%\n"
+        "- Condition score 85-100: +2% to +4%\n"
+        "- Condition score 70-84: 0% to +2%\n"
+        "- Condition score 55-69: -2% to -4%\n"
+        "- Condition score below 55: -5% to -10%\n"
+        "IMPORTANT: Only return adjustment_pct=0 if property is perfectly average."
+    )
     prompt = (
-        "You are a real estate appraiser. Based on this property data, "
-        "provide a price estimate with confidence interval.\n"
-        "Property data: " + property_data + "\n\n"
-        "Return JSON only:\n"
-        '{"estimated_value": 0, "confidence_interval": {"low": 0, "high": 0}, '
-        '"confidence_level": "low/medium/high", '
-        '"key_factors": ["factor 1"], '
-        '"condition_adjustment_pct": 0, '
-        '"reasoning": "2-3 sentence explanation"}'
+        "You are a real estate appraiser.\n\n"
+        + rules + "\n\n"
+        + "Property data: " + property_data + "\n\n"
+        + "Return JSON only (no markdown):\n"
+        + '{"adjustment_pct": -3.5, '
+        + '"confidence_level": "medium", '
+        + '"key_factors": ["factor: impact%"], '
+        + '"reasoning": "2-3 sentence explanation"}'
     )
     response = llm.invoke(prompt)
     return response.content

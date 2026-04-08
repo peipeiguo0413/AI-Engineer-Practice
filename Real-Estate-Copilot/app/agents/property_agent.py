@@ -135,6 +135,10 @@ def analyze_property(form, inspection_result=None):
             " expenses=" + str(form.monthly_expenses or 500)
         )
 
+    # Step 3.5: Comparable sales analysis
+    from app.tools.comp_tools import run_comp_analysis
+    comp_result = run_comp_analysis(form, condition["condition_score"])
+
     print("  Generating price prediction...")
     property_data = json.dumps({
         "address": form.address,
@@ -153,7 +157,21 @@ def analyze_property(form, inspection_result=None):
             if inspection_result else None
         ),
     })
-    price_prediction = parse_json(predict_property_price.invoke(property_data))
+    raw_prediction  = parse_json(predict_property_price.invoke(property_data))
+    adj_pct         = raw_prediction.get("adjustment_pct", 0)
+    estimated_value = round(form.asking_price * (1 + adj_pct / 100))
+    price_prediction = {
+        "estimated_value":       estimated_value,
+        "confidence_interval":   {
+            "low":  round(estimated_value * 0.95),
+            "high": round(estimated_value * 1.05),
+        },
+        "confidence_level":      raw_prediction.get("confidence_level", "low"),
+        "adjustment_pct":        adj_pct,
+        "key_factors":           raw_prediction.get("key_factors", []),
+        "reasoning":             raw_prediction.get("reasoning", ""),
+        "disclaimer":            "Price estimate is AI-generated based on condition scoring only. No real MLS data was used. Always verify with a licensed appraiser.",
+    }
 
     print("  Generating recommendation...")
     mortgage = json.loads(mortgage_result)
@@ -214,5 +232,6 @@ def analyze_property(form, inspection_result=None):
         "roi":              json.loads(roi_result) if roi_result else None,
         "recommendation":   parse_json(rec_raw),
         "inspection":       inspection_result,
+        "comps":            comp_result,
     }
     return validate_result(final, form)
