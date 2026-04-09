@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Real Estate Copilot</title>
+  <style>
+    body { font-family: Arial; max-width: 650px; margin: 40px auto; padding: 20px; background: #f9f9f9; }
+    h2 { color: #1B4F8A; margin-bottom: 4px; }
+    .subtitle { color: #888; font-size: 13px; margin-bottom: 16px; }
+    #messages { height: 420px; overflow-y: auto; border: 1px solid #ddd;
+                padding: 15px; margin-bottom: 12px; border-radius: 10px; background: white; }
+    .agent { background: #EBF3FB; padding: 10px 14px; border-radius: 10px;
+             margin: 8px 0; max-width: 85%; line-height: 1.5; }
+    .user  { background: #1B4F8A; color: white; padding: 10px 14px;
+             border-radius: 10px; margin: 8px 0 8px auto;
+             max-width: 85%; text-align: right; line-height: 1.5; }
+    .system { background: #fff3cd; padding: 8px 12px; border-radius: 8px;
+              margin: 6px 0; font-size: 12px; color: #856404; text-align: center; }
+    #input-row { display: flex; gap: 8px; }
+    #input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; }
+    #input:focus { outline: none; border-color: #1B4F8A; }
+    .btn { padding: 10px 18px; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; }
+    #btn-send  { background: #1B4F8A; }
+    #btn-reset { background: #E07A2F; }
+    #status { font-size: 12px; color: #888; margin-top: 6px; }
+  </style>
+</head>
+<body>
+  <h2>Real Estate Copilot</h2>
+  <p class="subtitle">Your AI-powered property advisor</p>
+  <div id="messages"></div>
+  <div id="input-row">
+    <input id="input" placeholder="Type your answer..."
+           onkeydown="if(event.key==='Enter') send()">
+    <button id="btn-send" class="btn" onclick="send()">Send</button>
+    <button id="btn-reset" class="btn" onclick="resetChat()">Reset</button>
+  </div>
+  <div id="status">Starting...</div>
+
+  <script>
+    var SESSION_ID = "user-" + Math.random().toString(36).substr(2, 6);
+    var TOKEN = "test-token";
+    var mode = "preference";
+    var profile = {};
+
+    function setStatus(text) {
+      var el = document.getElementById("status");
+      if (el) el.textContent = text;
+    }
+
+    function addMessage(text, isUser, cls) {
+      var div = document.createElement("div");
+      div.className = cls || (isUser ? "user" : "agent");
+      var html = text.replace(/\*\*(.*?)\*\*/g, "<b>$1</b>").replace(/\n/g, "<br>");
+      div.innerHTML = html;
+      var msgs = document.getElementById("messages");
+      msgs.appendChild(div);
+      msgs.scrollTop = 99999;
+    }
+
+    function apiChat(message, reset) {
+      var body = { session_id: SESSION_ID, message: message };
+      if (reset) body.reset = true;
+      return fetch("/v1/preferences/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + TOKEN },
+        body: JSON.stringify(body)
+      }).then(function(r) { return r.json(); });
+    }
+
+    function send() {
+      var input = document.getElementById("input");
+      var msg = input.value.trim();
+      if (!msg) return;
+      addMessage(msg, true);
+      input.value = "";
+      input.disabled = true;
+      setStatus("Thinking...");
+
+      apiChat(msg).then(function(result) {
+        if (result.data) {
+          addMessage(result.data.message, false);
+          profile = result.data.profile || {};
+          if (result.data.done) {
+            mode = "freeform";
+            addMessage("Profile saved! Click Reset to update your preferences.", false, "system");
+          }
+        }
+        input.disabled = false;
+        input.focus();
+        setStatus("Session: " + SESSION_ID + (mode === "freeform" ? " - Profile saved" : ""));
+      }).catch(function(err) {
+        addMessage("Error: " + err.message, false);
+        input.disabled = false;
+        setStatus("Error occurred");
+      });
+    }
+
+    function resetChat() {
+      SESSION_ID = "user-" + Math.random().toString(36).substr(2, 6);
+      mode = "preference";
+      profile = {};
+      document.getElementById("messages").innerHTML = "";
+      setStatus("Resetting...");
+      apiChat(null).then(function(result) {
+        if (result.data) addMessage(result.data.message, false);
+        setStatus("Session: " + SESSION_ID);
+      });
+    }
+
+    window.onload = function() {
+      apiChat(null).then(function(result) {
+        if (result.data) addMessage(result.data.message, false);
+        setStatus("Session: " + SESSION_ID);
+      });
+    };
+  </script>
+</body>
+</html>

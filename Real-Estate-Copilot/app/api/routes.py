@@ -1,22 +1,31 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException, Depends
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
 from typing import Optional
 import shutil, os, uuid
 from datetime import datetime
+from fastapi.staticfiles import StaticFiles
 
 from app.models.property_form import InteriorConditionForm
 from app.agents.property_agent import analyze_property
 from app.rag.inspection_rag import analyze_inspection_report
 from app.reports.property_intelligence_pdf import generate_property_intelligence_pdf
 from app.config import UPLOAD_DIR, OUTPUT_DIR
+from app.agents.preference_agent import chat as preference_chat, get_profile
 
-app    = FastAPI(title="Real Estate Copilot API", version="1.0")
+app = FastAPI(title="Real Estate Copilot API", version="1.0")
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
 bearer = HTTPBearer()
 
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+@app.get("/chat", response_class=HTMLResponse)
+async def chat_ui():
+    html_path = "/Users/peipeiguo/Desktop/AI Agent Learning/Real-Estate-Copilot/app/static/chat.html"
+    with open(html_path) as f:
+        return f.read()
 
 # ── Simple JWT check (dev mode) ───────────────────────
 def verify_token(credentials: HTTPAuthorizationCredentials = Depends(bearer)):
@@ -107,3 +116,31 @@ async def get_report(
     if not os.path.exists(pdf_path):
         raise HTTPException(status_code=404, detail="Report not found")
     return FileResponse(pdf_path, media_type="application/pdf")
+
+class ChatMessage(BaseModel):
+    session_id: str
+    message:    Optional[str] = None  # None = start new conversation
+    reset:      bool = False
+
+@app.post("/v1/preferences/chat")
+async def preferences_chat(
+    request: ChatMessage,
+    token: str = Depends(verify_token)
+):
+    try:
+        # Reset if requested
+        msg = None if request.reset else request.message
+        result = preference_chat(request.session_id, msg)
+        return {"status": "success", "data": result}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/v1/preferences/profile/{session_id}")
+async def get_preference_profile(
+    session_id: str,
+    token: str = Depends(verify_token)
+):
+    profile = get_profile(session_id)
+    if not profile:
+        raise HTTPException(status_code=404, detail="Profile not found")
+    return {"status": "success", "data": profile}
