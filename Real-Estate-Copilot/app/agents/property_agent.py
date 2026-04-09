@@ -233,5 +233,9 @@ def analyze_property(form, inspection_result=None):
         "recommendation":   parse_json(rec_raw),
         "inspection":       inspection_result,
         "comps":            comp_result,
+        "sqft":             form.sqft,
+        "bedrooms":         form.bedrooms,
+        "bathrooms":        form.bathrooms,
+        "year_built":       form.year_built,
     }
     return validate_result(final, form)

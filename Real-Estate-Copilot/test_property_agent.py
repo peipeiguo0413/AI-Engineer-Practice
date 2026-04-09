@@ -156,3 +156,19 @@ if analysis:
         print(f"  {i}. {c.get('address', '')} — ${c.get('sold_price', 0):,.0f} ({c.get('sqft', 0):,} sqft, similarity: {c.get('similarity_score', 0)})")
 else:
     print("No comp analysis available")
+
+# Generate Property Intelligence Report PDF
+print("\n\n=== GENERATING PROPERTY INTELLIGENCE REPORT PDF ===")
+from app.reports.property_intelligence_pdf import generate_property_intelligence_pdf
+from datetime import datetime
+
+timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+pdf_path = generate_property_intelligence_pdf(
+    result=result_combined,
+    output_path=f"./outputs/property_intelligence_{timestamp}.pdf",
+    property_address="1234 Maple Street, Seattle, WA 98101",
+    report_type="buyer",
+    agent_name="Peipei Guo",
+    agent_license="WA#12345",
+)
+print(f"Report saved: {pdf_path}")
