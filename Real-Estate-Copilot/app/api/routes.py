@@ -133,6 +133,8 @@ async def preferences_chat(
         result = preference_chat(request.session_id, msg)
         return {"status": "success", "data": result}
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/v1/preferences/profile/{session_id}")
