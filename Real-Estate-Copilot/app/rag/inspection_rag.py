@@ -84,6 +84,29 @@ def parse_json(raw: str) -> dict:
         return {"error": "Failed to parse response", "raw": raw[:200]}
 
 # ── Main analysis function ─────────────────────────────
+# =============================================================================
+# TODO (Phase 1.5): 10-Year Cost Projection per Inspection Finding
+# Location: add to analyze_inspection_report() output
+# Purpose: transform repair costs from one-time to lifetime perspective
+# Implementation:
+#   For each finding, estimate:
+#   - immediate_cost: current repair estimate (already have this)
+#   - year_5_risk: probability issue escalates if not fixed
+#   - year_10_projected_cost: if ignored, what will it cost in 10 years
+#   - recommended_action: fix now / monitor / budget for replacement
+#   Example output per finding:
+#   {
+#     "issue": "Heat exchanger not fully inspectable",
+#     "severity": "Major",
+#     "immediate_cost": {"low": 200, "high": 500},
+#     "year_10_projected_cost": {"low": 3000, "high": 6000},
+#     "year_5_risk": "high — full HVAC replacement likely within 5-7 years",
+#     "recoended_action": "Budget $4,000-$6,000 for HVAC replacement"
+#   }
+#   Summary: total_10yr_low, total_10yr_high
+#   "This property may require $12,000-$28,000 in repairs over the next 10 years"
+# =============================================================================
+
 def analyze_inspection_report(pdf_path: str) -> dict:
     print(f"\nAnalyzing: {pdf_path}")
 

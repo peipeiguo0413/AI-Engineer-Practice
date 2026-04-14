@@ -110,6 +110,28 @@ def validate_result(result: dict, form) -> dict:
     }
     return result
 
+# =============================================================================
+# TODO (Phase 1.5): Integrate Neighborhood Intelligence into analyze_property()
+# Location: add as Step 2.5 between market search and financial calculations
+# Implementation:
+#   from app.tools.property_tools import get_neighborhood_intelligence
+#   neighborhood = get_neighborhood_intelligence(form.address)
+#   Include in final result dict as "neighborhood": neighborhood
+#   Surface in PDF Section 1 (risk flags) and Section 2 (location score)
+# =============================================================================
+
+# =============================================================================
+# TODO (Phase 1.5): Integrate True Cost Calculator into analyze_property()
+# Location: add after mortgage calculation (Step 4)
+# Implementation:
+#   from app.tools.property_tools import calculate_true_cost
+#   true_cost = calculate_true_cost(form.asking_price, form.sqft,
+#                                   form.hoa_monthly, form.address)
+#   Include in final result dict as "true_cost": true_cost
+#   Surface in PDF Section 2 replacing current Financial Model table
+#   Key display: "True Monthly Cost: $5,423 vs Zillow shows: $4,073"
+# =============================================================================
+
 def analyze_property(form, inspection_result=None):
     print("Analyzing property: " + form.address)
 

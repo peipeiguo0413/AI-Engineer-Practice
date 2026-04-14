@@ -10,6 +10,44 @@ from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_JUSTIFY, TA_RIGHT
 from datetime import datetime
 import os
 
+# =============================================================================
+# TODO (Phase 1.5): True Cost Calculator — PDF Section 2 update
+# Replace current simple mortgage table with full cost breakdown:
+#   Monthly Mortgage:      $4,073
+#   Property Tax:          $  625  (~1% of value / 12)
+#   Homeowner Insurance:   $  150
+#   HOA:                   $    0
+#   Maintenance Reserve:   $  375  (1% rule)
+#   Utilities (estimate):  $  200
+#   ─────────────────────────────
+#   TRUE MONTHLY COST:     $5,423  ← highlight this number
+#   vs Zillow shows:       $4,073
+#   Hidden costs:          $1,350/mo ($16,200/yr)
+# =============================================================================
+
+# =============================================================================
+# TODO (Phase 1.5): Neighborhood Intelligence — Ps/risks:
+#   Neighborhood Risk Flags table:
+#   ┌─────────────────┬──────────────────────────────────┐
+#   │ Flood Zone      │ Zone X — minimal risk            │
+#   │ Crime Trend     │ Declining — down 12% YoY         │
+#   │ Noise Level     │ Moderate — 0.3mi from I-5        │
+#   │ Development     │ 2 mixed-use projects within 0.5mi│
+#   │ School Rating   │ 8/10 — Lincoln Elementary        │
+#   │ Walk Score      │ 82 — Very Walkable               │
+#   └─────────────────┴──────────────────────────────────┘
+# =============================================================================
+
+# =============================================================================
+# TODO (Phase 1.5): 10-Year Cost Projection — PDF Section 4 update
+# Add after in──────────────────────┤
+#   │ HVAC (age 12yr)          │ $4k-$6k      │ Budget for replacement yr 3-5│
+#   │ Roof debris / vents      │ $500-$1,500  │ Annual maintenance           │
+#   │ Grading/drainage         │ $1k-$3k      │ Fix now to avoid foundation  │
+#   └──────────────────────────┴──────────────┴──────────────────────────────┘
+#   Total 10-Year Outlook: $8,000 – $18,000
+# =============================================================================
+
 BLUE       = HexColor("#1B4F8A")
 ORANGE     = HexColor("#E07A2F")
 GREEN      = HexColor("#2E7D32")

@@ -3,6 +3,45 @@ from langchain_anthropic import ChatAnthropic
 from app.config import MODEL_FAST
 import json
 
+# =============================================================================
+# TODO (Phase 1.5): True Cost Calculator
+# Location: add as new @tool function below existing mortgage/ROI tools
+# Purpose: show real monthly cost beyond just mortgage payment
+# Implementation:
+#   Input: asking_price, sqft, hoa_monthly, year_built, location
+#   Output: {
+#     mortgage_payment: 4073,
+#     property_tax_monthly: 625,      # ~1% of value / 12
+#     insurance_monthly: 150,          # ~$1,800/yr typical
+#     hoa_monthly: 0,
+#     maintenance_monthly: 375,        # 1% of value / 12 (rule of thumb)
+#     utilities_estimate: 200,
+#     total_true_monthly_cost: 5423,   # the number Zillow never shows
+#     vs_rent_equivalent: "Renting equivalent would cost ~$4,200/mo"
+#   }
+# Key insight: "Your true monthly cost is $5,423 — not the $4,073 Zillow shows"
+# ===========================================================================
+
+# =============================================================================
+# TODO (Phase 1.5): Neighborhood Intelligence Tool
+# Location: add as new @tool function, called from property_agent.py
+# Purpose: surface risks Zillow doesn't show
+# Implementation:
+#   Input: address, zip_code
+#   Output: {
+#     crime_trend: "declining / stable / increasing",
+#     flood_zone: "Zone X (minimal) / Zone AE (high risk)",
+#     noise_level: "low / moderate / high (near highway/airport)",
+#     development_pipeline: "3 new condo projects approved within 0.5mi",
+#     school_rating: 8,               # GreatSchools API (Phase 2: real data)
+#     walk_score: 82,
+#     appreciation_trend: "+3.2% YoY over last 5 years",
+#     risk_flags: ["flood zone AE", "highway noise"]
+#   }
+# Phase 1: LLM-estimated based on address/neighborhood knowledge
+# Phase 2: integrate real APIs (GreatSchools, WalkScore, FEMA flood maps)
+# =============================================================================
+
 llm = ChatAnthropic(model=MODEL_FAST, temperature=0, max_tokens=512)
 
 def parse_json(raw):
