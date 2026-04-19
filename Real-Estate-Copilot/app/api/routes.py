@@ -13,6 +13,8 @@ from app.rag.inspection_rag import analyze_inspection_report
 from app.reports.property_intelligence_pdf import generate_property_intelligence_pdf
 from app.config import UPLOAD_DIR, OUTPUT_DIR
 from app.agents.preference_agent import chat as preference_chat, get_profile
+from app.agents.comparison_agent import run_comparison
+from app.reports.comparison_pdf import generate_comparison_pdf
 
 app = FastAPI(title="Real Estate Copilot API", version="1.0")
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
@@ -146,3 +148,42 @@ async def get_preference_profile(
     if not profile:
         raise HTTPException(status_code=404, detail="Profile not found")
     return {"status": "success", "data": profile}
+
+    from app.agents.comparison_agent import run_comparison
+from app.reports.comparison_pdf import generate_comparison_pdf
+
+class ComparisonRequest(BaseModel):
+    properties:   list
+    report_format: Optional[str] = "buyer"
+    agent_name:   Optional[str] = None
+    agent_license: Optional[str] = None
+
+@app.post("/v1/property/compare")
+async def property_compare(
+    request: ComparisonRequest,
+    token: str = Depends(verify_token)
+):
+    try:
+        if len(request.properties) < 2:
+            raise HTTPException(status_code=400, detail="Need at least 2 properties")
+        if len(request.properties) > 5:
+            raise HTTPException(status_code=400, detail="Maximum 5 properties allowed")
+
+        result = run_comparison(request.properties, report_type=request.report_format)
+
+        if request.report_format in ("buyer", "investor"):
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            pdf_path  = os.path.join(OUTPUT_DIR, f"comparison_{timestamp}.pdf")
+            generate_comparison_pdf(
+                comparison_result=result,
+                output_path=pdf_path,
+                agent_name=request.agent_name,
+                agent_license=request.agent_license,
+            )
+            result["report_url"] = f"/v1/report/{os.path.basename(pdf_path)}"
+
+        return {"status": "success", "data": result}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
